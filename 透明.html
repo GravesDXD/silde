@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		ul{
+			list-style: none;
+		}
+		.slider{
+			width: 750px;
+			height: 250px;
+			overflow: hidden;
+			position: relative;
+		}
+		.slider .list{
+			position: absolute;
+		}
+		.slider .list .item{
+			position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+		}
+		.slider .list .item img{
+			width: 750px;
+			height: 250px;
+			display: block;
+		}
+		.slider .prev,.slider .next{
+		position: relative;
+		}
+		.slider .pagination .bullet{
+			float: left;
+			width: 20px;
+			height: 20px;
+			background: cyan;
+			border: 2px solid #000;
+			z-index: 50;
+			margin-left: 5px;
+			position: relative;
+			top: 200px;
+		}
+		.focus{
+			background: green !important;
+		}
+		.slider .list .item:first-of-type {
+            opacity: 1;
+        }
+	</style>
+</head>
+<body>
+	<div class="slider">
+		<ul class="list">
+			<li class="item"><img src="./imgs/pic (1).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (2).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (3).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (4).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (5).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (6).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (7).jpg" alt=""></li>
+		</ul>
+		<button class="prev">上一张</button>
+		<button class="next">下一张</button>
+		<ul class="pagination">
+			<li class="bullet focus"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+		</ul>
+	</div>
+	<script src="tools.js"></script>
+	<script>
+		function slider_opacity(container){
+			var current,previous;//定义上一张和下一张的初始
+			var length;
+			var id;
+			var isStopped;//定义一个isStopped，接下来做鼠标移上判断
+			init();
+			function init(){
+				current = previous =0;//初始化索引
+				isStopped = false;//假设isStopped是假的
+				length = container.querySelectorAll('.item').length;//所有li的个数				
+				var bullets = container.querySelectorAll('.bullet');
+				for(var i=0;i<bullets.length;i++){
+					bullets[i].index = i;
+					bullets[i].onclick = function(){
+						previous = current;
+						current = this.index;
+						slideTo(previous,current);
+					}
+				}
+				container.onmouseover = function(){//鼠标在上面，isStopped是真的，就不调用slideTo
+					isStopped = true;
+					slideStop();
+				}
+				container.onmouseout = function(){//鼠标没在上面，就调用slideTo
+					isStopped = false;
+					slideAuto();
+				}
+				slideAuto();
+			}
+			container.querySelector('.next').onclick = function(){
+				slideStop();
+				slideNext();
+			}
+			container.querySelector('.prev').onclick = function(){
+				slideStop();
+				slidePrev();
+			}
+			function slideTo(prev, curr){
+				var lis = container.querySelectorAll('.list .item');
+				var bullets = container.querySelectorAll('.bullet');
+				bullets[prev].className = 'bullet';
+				bullets[curr].className += ' focus';
+				animate(lis[prev], {
+                opacity: 0
+	            });
+	            animate(lis[curr], {
+	                opacity: 100
+	            }, function () {
+                if (!isStopped) {
+                    slideAuto();
+                	}
+            	});
+			}
+			function slideNext(){
+				previous = current;
+            	current++;
+            	if(current === length){
+            		current = 0;
+            	}
+				slideTo(previous, current);
+			}
+			function slidePrev(){
+				previous = current;
+            	current--;
+            	if(current === -1){
+            		current = length-1;
+            	}
+				slideTo(previous, current);
+			}
+			function slideAuto(){
+				 clearInterval(id);
+            	id = setInterval(function () {
+                slideNext();
+            	}, 2000);
+			}
+			function slideStop(){
+				clearInterval(id);
+			}
+		}
+		slider_opacity(document.querySelector('.slider'));
+	</script>
+</body>
+</html>

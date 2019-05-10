@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		ul{
+			list-style: none;
+		}
+		.slider{
+			width: 750px;
+			height: 250px;
+			overflow: hidden;
+			position: relative;
+		}
+		.slider .list{
+			position: absolute;
+		}
+		.slider .list .item{
+			width: 750px;
+			height: 250px;
+			float: left;
+		}
+		.slider .list .item img{
+			width: 750px;
+			height: 250px;
+			display: block;
+		}
+		.slider .prev,.slider .next{
+		position: relative;
+		}
+		.slider .pagination .bullet{
+			float: left;
+			width: 20px;
+			height: 20px;
+			background: cyan;
+			border: 2px solid #000;
+			z-index: 50;
+			margin-left: 5px;
+			position: relative;
+			top: 200px;
+		}
+		.focus{
+			background: green !important;
+		}
+	</style>
+</head>
+<body>
+	<div class="slider">
+		<ul class="list">
+			<li class="item"><img src="./imgs/pic (1).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (2).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (3).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (4).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (5).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (6).jpg" alt=""></li>
+			<li class="item"><img src="./imgs/pic (7).jpg" alt=""></li>
+		</ul>
+		<button class="prev">上一张</button>
+		<button class="next">下一张</button>
+		<ul class="pagination">
+			<li class="bullet focus"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+			<li class="bullet"></li>
+		</ul>
+	</div>
+	<script src="tools.js"></script>
+	<script>
+		function slider_horizontal(container){
+			var currentIndex;
+			var isStopped;
+			var id;
+			var liWidth;
+			init();
+			function init(){
+				currentIndex = 1;
+				//选中第一个li，克隆节点，
+				var li_1 = container.querySelector('.list .item:first-of-type');
+				var fake_1 = li_1.cloneNode(true);
+				//选中最后一个li，克隆节点
+				var li_3 = container.querySelector('.list .item:last-of-type');
+				var fake_3 = li_3.cloneNode(true);
+				var ul = container.querySelector('.list');
+				ul.appendChild(fake_1);
+				ul.insertBefore(fake_3,li_1);
+				//选中所有的li，并获取li的宽度
+				var lis = container.querySelectorAll('.list .item');
+				liWidth = lis[0].offsetWidth;
+				var len = lis.length;
+				ul.style.left = -currentIndex * liWidth + 'px'
+				container.querySelector('.list').style.width = liWidth * len + 'px';
+				//监听事件
+				container.querySelector('.next').onclick = function(){
+					stop();
+					sliderNext();
+				}
+				container.querySelector('.prev').onclick = function(){
+					stop();
+					sliderPrev();
+				}
+				//给每一个bullet添加点击事件
+				var bullets = container.querySelectorAll('.bullet');
+				for(var i = 0;i<bullets.length;i++){
+					bullets[i].index = i;
+					bullets[i].onclick = function(){
+						currentIndex = this.index+1;
+						sliderTo(currentIndex);
+					}
+				}
+				//给container添加鼠标移上时间，并判断
+				container.onmouseover = function () {
+                isStopped = true;
+                stop();
+            	}
+	            container.onmouseout = function () {
+	                isStopped = false;
+	                auto();
+	            }
+	            auto();
+			}
+			function sliderTo(index){
+				var ul = container.querySelector('.list');
+				var len = ul.children.length;
+				//点击下一张，如果索引等于长度，重新定义currentIndex和index，并让ul的位置重新回到起始位置
+				//点击上一张，如果索引等于-1，就让currentIndex和index等于最后一个的索引，并且让ul的位置回到最后一张的位置
+				if(index === len){
+					currentIndex = index = 2;
+					ul.style.left = -liWidth + 'px';
+				}
+				var focusIndex;//焦点索引
+				var bullets = container.querySelectorAll('.slider .pagination .bullet')
+				//判断子弹的索引
+				if(index === -1){
+					currentIndex = index = len-3;
+					ul.style.left = -(len-2) * liWidth + 'px'
+				}
+				if(index === 0){
+					//焦点应该落在最后一张上
+					focusIndex = bullets.length - 1;
+				}else if(index === len - 1){
+					focusIndex = 0;
+				}else{
+					focusIndex = index - 1;
+				}
+				container.querySelector('.focus').className = 'bullet'
+				bullets[focusIndex].className += ' focus'
+				var left = -index * liWidth;
+				var ul = container.querySelector('.list');
+				animate(ul,{
+					left:left
+				}, function () {
+                if (!isStopped) {
+                    auto();
+                }
+            })
+			}
+			function sliderNext(){
+				currentIndex++;
+				sliderTo(currentIndex);
+			}
+			function sliderPrev(){
+				currentIndex--;
+				sliderTo(currentIndex);
+			}
+			 function auto() {
+            	clearInterval(id);
+            	id = setInterval(function () {
+	                sliderNext();
+	            }, 3000);
+        	}
+	        function stop() {
+	            clearInterval(id);
+	        }
+		}
+		slider_horizontal(document.querySelector('.slider'))	
+	</script>
+</body>
+</html>

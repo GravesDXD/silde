@@ -1,2 +1,3 @@
 # silde
-a silde by js
+a silde by javascript 
+you can use it easily
